@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cc -c testing.c
+cc -o testing testing.o
+rm testing.o
