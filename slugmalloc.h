@@ -1,5 +1,5 @@
 #ifndef SLUGMALLOC_H
-#define SLUGMALLOC_H
+	#define SLUGMALLOC_H
 
 	typedef struct {
 		void *addr;
@@ -12,10 +12,10 @@
 	typedef struct {
 		slug_mem_t *allocs;
 		int size;
-		int maxSize;
+		int max_size;
 	} slug_mem;
 
-	extern slug_mem *SLUG_MEM;
+	slug_mem *SLUG_MEM;
 
 	#ifndef SLUGMALLOC_C
 
