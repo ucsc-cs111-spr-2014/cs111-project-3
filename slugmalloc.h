@@ -1,33 +1,39 @@
 #ifndef SLUGMALLOC_H
 #define SLUGMALLOC_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+	typedef struct {
+		void *addr;
+		char *file;
+		char *line;
+		long timestamp;
+		unsigned flags;
+	} *slug_mem_t;
 
-#define FUNCTIONIZE(a, b) a(b)
-#define STRINGIZE(a) #a
-#define INT2STRING(i) FUNCTIONIZE(STRINGIZE, i)
-#define FILE_POS __FILE__ "|" INT2STRING(__LINE__)
+	typedef struct {
+		slug_mem_t *allocs;
+		int size;
+		int maxSize;
+	} slug_mem;
 
-typedef struct {
-	void *addr;
-	char *file;
-	char *line;
-	long timestamp;
-	unsigned flags;
-} slug_mem_t;
+	extern slug_mem *SLUG_MEM;
 
-typedef struct {
-	slug_mem_t *allocations;
-	int size;
-	int maxSize;
-} slug_mem;
+	#ifndef SLUGMALLOC_C
 
-extern slug_mem SLUG_MEM[512];
+		#include <stdlib.h>
+		#include <stdio.h>
+		#include <string.h>
 
-#define malloc(s) slug_malloc((s), FILE_POS)
+		#define FUNCTIONIZE(a, b) a(b)
+		#define STRINGIZE(a) #a
+		#define INT2STRING(i) FUNCTIONIZE(STRINGIZE, i)
+		#define FILE_POS __FILE__ "|" INT2STRING(__LINE__)
 
-#define free(s) slug_free((s), FILE_POS)
+		#define malloc(s) slug_malloc((s), FILE_POS)
+
+		#define free(s) slug_free((s), FILE_POS)
+
+	#endif
 
 #endif
+
+
