@@ -8,8 +8,26 @@
 #define FUNCTIONIZE(a, b) a(b)
 #define STRINGIZE(a) #a
 #define INT2STRING(i) FUNCTIONIZE(STRINGIZE, i)
-#define FILE_POS __FILE__ ":" INT2STRING(__LINE__)
+#define FILE_POS __FILE__ "|" INT2STRING(__LINE__)
+
+typedef struct {
+	void *addr;
+	char *file;
+	char *line;
+	long timestamp;
+	unsigned flags;
+} slug_mem_t;
+
+typedef struct {
+	slug_mem_t *allocations;
+	int size;
+	int maxSize;
+} slug_mem;
+
+extern slug_mem SLUG_MEM[512];
 
 #define malloc(s) slug_malloc((s), FILE_POS)
+
+#define free(s) slug_free((s), FILE_POS)
 
 #endif

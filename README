@@ -7,7 +7,7 @@ make sure we:
 struct slug_mem {
 	slug_mem_t allocations[];
 	int size;
-	int maxSize
+	int maxSize;
 }
 
 struct slug_mem_t {
