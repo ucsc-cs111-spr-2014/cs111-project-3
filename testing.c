@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    *ptr_one = 25;
+    *ptr_one = 42;
     printf("%d\n", *ptr_one);
 
     free(ptr_one);

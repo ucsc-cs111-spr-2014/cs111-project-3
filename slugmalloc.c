@@ -1,8 +1,7 @@
-/* Hello! */
+#include <stdlib.h>
+#include <stdio.h>
 
 #define TAG "CS-111-OS"
-
-void *slug_malloc(size_t size, char *FILE_POS);
 
 void *slug_malloc(size_t size, char *FILE_POS) 
 {

@@ -1,5 +1,7 @@
 #!/bin/sh
 
-cc -c testing.c
-cc -o testing testing.o
-rm testing.o
+cc -c slugmalloc.c
+
+cc -c testing.c 
+cc -o testing testing.o slugmalloc.o
+rm testing.o slugmalloc.o
