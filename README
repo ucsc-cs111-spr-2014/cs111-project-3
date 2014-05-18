@@ -1,0 +1,20 @@
+make sure we:
+-Dont free non-malloc'd memory
+-Print memstats
+-error on freeing non-1st-byte of malloc
+-Dont free already freed memory
+
+struct slug_mem {
+	slug_mem_t allocations[];
+	int size;
+	int maxSize
+}
+
+struct slug_mem_t {
+	void *addr;
+	char *file;
+	char *line;
+	long timestamp;
+	unsigned flags;
+}
+
