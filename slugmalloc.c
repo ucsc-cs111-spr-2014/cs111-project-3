@@ -2,35 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 
 #define SLUGMALLOC_C
 #include "slugmalloc.h"
 
 #define TAG "CS-111-OS"
 
-/*
-make sure we:
--Dont free non-malloc'd memory
--Print memstats
--error on freeing non-1st-byte of malloc
--Dont free already freed memory
-*/
-
-/*
-typedef struct {
-	void *addr;
-	char *file;
-	char *line;
-	long timestamp;
-	unsigned flags;
-} *slug_mem_t;
-
-typedef struct {
-	slug_mem_t *allocs;
-	int size;
-	int max_size;
-} slug_mem;
-*/
 void print_slug_mem_t(slug_mem_t elem) {
 	printf("%p|%s|%s\n", 
 		elem->addr, elem->file, elem->line);
@@ -43,10 +21,12 @@ void print_slug_mem(void) {
 
 	printf("size:%d|max_size:%d\n", SLUG_MEM->size, SLUG_MEM->max_size);
 	for (i = 0; i < SLUG_MEM->max_size; i++) {
-		if (SLUG_MEM->allocs[i]->flags == 1) {
-			continue;
-		}
 		if (SLUG_MEM->allocs[i] != NULL) {
+			if (SLUG_MEM->allocs[i]->flags == 1) {
+				printf("continue.");
+				continue;
+			}
+			printf("start!");
 			num_mallocs++;
 			print_slug_mem_t(SLUG_MEM->allocs[i]);
 		} else {
@@ -60,6 +40,8 @@ void print_slug_mem(void) {
 int add_slug_mem(void *ptr, char *FILE_POS) 
 {
 	slug_mem_t slugT;
+	char file_pos[64];
+
 	printf("size:%d max_size:%d\n", 
 		SLUG_MEM->size, SLUG_MEM->max_size);
 
@@ -74,11 +56,17 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 
 	slugT = malloc(sizeof(slug_mem_t));
 	slugT->addr = ptr;
-	slugT->file = strtok(FILE_POS, "|");
-	slugT->line = strtok(NULL, "|");
+
+	strcpy(file_pos, FILE_POS);
+	strcpy( slugT->file, strtok(file_pos, "|") );
+	strcpy( slugT->line, strtok(NULL, "|") );
+
 	slugT->timestamp = time(NULL);
 	slugT->flags = 0;
-	SLUG_MEM->allocs[SLUG_MEM->size++] = slugT;
+	SLUG_MEM->allocs[SLUG_MEM->size] = slugT;
+	print_slug_mem_t(slugT);
+	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size]);
+	SLUG_MEM->size++;
 }
 
 void *slug_malloc(size_t size, char *FILE_POS) 
@@ -90,7 +78,7 @@ void *slug_malloc(size_t size, char *FILE_POS)
 		printf("%s\n", "INIT-IALIZING");
 		SLUG_MEM = malloc(sizeof(slug_mem));
 		SLUG_MEM->size = 0;
-		SLUG_MEM->max_size = 8;
+		SLUG_MEM->max_size = 128;
 		SLUG_MEM->allocs = calloc(SLUG_MEM->max_size, sizeof(slug_mem_t));
 	}
 	ptr = malloc(size);

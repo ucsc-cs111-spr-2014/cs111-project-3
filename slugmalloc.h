@@ -3,8 +3,8 @@
 
 	typedef struct {
 		void *addr;
-		char *file;
-		char *line;
+		char file[128];
+		char line[64];
 		long timestamp;
 		unsigned flags;
 	} *slug_mem_t;
@@ -13,9 +13,9 @@
 		slug_mem_t *allocs;
 		int size;
 		int max_size;
-	} slug_mem;
+	} *slug_mem;
 
-	slug_mem *SLUG_MEM;
+	slug_mem SLUG_MEM;
 
 	#ifndef SLUGMALLOC_C
 

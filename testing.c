@@ -14,8 +14,10 @@ int main(int argc, char *argv[]) {
         *ptr_one = i;
         printf("%d\n", *ptr_one);
 
-        free(ptr_one);
+        /*free(ptr_one);*/
     }
+
+    print_slug_mem();
 
     return 0;
 }
