@@ -1,13 +1,15 @@
 #ifndef SLUGMALLOC_H
 	#define SLUGMALLOC_H
 	#include <time.h>
+	
+	typedef enum { used=0, freed=1 } bool;
 
 	typedef struct {
 		void *addr;
 		char *file;
 		char *line;
 		time_t timestamp;
-		int flags;
+		bool flags;
 	} *slug_mem_t;
 
 	typedef struct {

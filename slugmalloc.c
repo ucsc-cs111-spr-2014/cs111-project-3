@@ -22,8 +22,8 @@ void print_slug_mem(void) {
 	printf("size:%d|max_size:%d\n", SLUG_MEM->size, SLUG_MEM->max_size);
 	for (i = 0; i < SLUG_MEM->max_size; i++) {
 		if (SLUG_MEM->allocs[i] != NULL) {
-			if (SLUG_MEM->allocs[i]->flags == 1) {
-				printf("c.");
+			if (SLUG_MEM->allocs[i]->flags == freed) {
+				printf("c.%d\n", i);
 				continue;
 			}
 			printf("s!");
@@ -79,8 +79,7 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 	print_slug_mem_t(slugT);
 
 	slugT->timestamp = time(NULL);
-	/*slugT->flags = 0; 
-		anthony: somehow this fux up slugT->file, wat?*/
+	slugT->flags = used; 
 
 	SLUG_MEM->allocs[SLUG_MEM->size] = slugT;
 	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size]);
@@ -106,17 +105,25 @@ void *slug_malloc(size_t size, char *FILE_POS)
 
 void slug_free(void *ptr, char *FILE_POS) 
 {
-	int i;
+	int i=0;
 	printf("%s:%s: %s\n", TAG, FILE_POS, "slug_free\n");
 
-	/*anthony: WRONG(?)*/
-	/*for (i = 0; i < SLUG_MEM->max_size; i++) {
-		if (SLUG_MEM->allocs[i] != NULL 
-				&& SLUG_MEM->allocs[i]->flags == 0
+	while(SLUG_MEM->allocs[i] != NULL) {
+		if(SLUG_MEM->allocs[i]->addr == ptr) {
+			SLUG_MEM->allocs[i]->flags = freed;
+			free(ptr);
+			break;
+		}
+		i++;
+	}
+
+	/*anthony: WRONG(?)
+	for (i = 0; i < SLUG_MEM->max_size; i++) {
+		if (SLUG_MEM->allocs[i] != NULL) { 
+			if( SLUG_MEM->allocs[i]->flags == used
 				&& SLUG_MEM->allocs[i]->addr == ptr) {
-			SLUG_MEM->allocs[i]->flags = 1;
+				SLUG_MEM->allocs[i]->flags = freed;
+				free(ptr);
 		}
 	}*/
-
-	free(ptr);
 }
