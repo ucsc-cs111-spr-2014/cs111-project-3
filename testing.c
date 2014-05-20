@@ -13,8 +13,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("%d\n", i);
-		sleep(2);
-		/*free(ptr_one);*/
 	}
 	
 	
