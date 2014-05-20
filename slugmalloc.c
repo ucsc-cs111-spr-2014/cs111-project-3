@@ -55,7 +55,6 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 		SLUG_MEM->max_size = SLUG_MEM->max_size * 4;
 		SLUG_MEM->allocs =
 			realloc(SLUG_MEM->allocs, SLUG_MEM->max_size * sizeof(slug_mem_t));
-			/*anthony: needed to be ... * sizeof(...)*/
 		print_slug_mem();
 	}
 
@@ -108,22 +107,14 @@ void slug_free(void *ptr, char *FILE_POS)
 	int i=0;
 	printf("%s:%s: %s\n", TAG, FILE_POS, "slug_free\n");
 
-	while(SLUG_MEM->allocs[i] != NULL) {
-		if(SLUG_MEM->allocs[i]->addr == ptr) {
-			SLUG_MEM->allocs[i]->flags = freed;
-			free(ptr);
-			break;
-		}
-		i++;
-	}
-
-	/*anthony: WRONG(?)
-	for (i = 0; i < SLUG_MEM->max_size; i++) {
-		if (SLUG_MEM->allocs[i] != NULL) { 
-			if( SLUG_MEM->allocs[i]->flags == used
-				&& SLUG_MEM->allocs[i]->addr == ptr) {
+	for(i=0; i < SLUG_MEM->size; i++) {
+		if (SLUG_MEM->allocs[i] != NULL) {
+			if(SLUG_MEM->allocs[i]->addr == ptr) {
 				SLUG_MEM->allocs[i]->flags = freed;
 				free(ptr);
+				break;
+			}
 		}
-	}*/
+	}
+	return;
 }
