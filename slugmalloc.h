@@ -1,12 +1,13 @@
 #ifndef SLUGMALLOC_H
 	#define SLUGMALLOC_H
+	#include <time.h>
 
 	typedef struct {
 		void *addr;
-		char file[128];
-		char line[64];
-		long timestamp;
-		unsigned flags;
+		char *file;
+		char *line;
+		time_t timestamp;
+		int flags;
 	} *slug_mem_t;
 
 	typedef struct {

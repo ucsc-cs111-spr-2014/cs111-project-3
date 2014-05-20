@@ -3,7 +3,7 @@
 int main(int argc, char *argv[]) {
     int *ptr_one, i;
 
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 6; i++) {
         ptr_one = (int *) malloc(sizeof(int));
 
         if (ptr_one == NULL) {
