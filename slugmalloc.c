@@ -7,35 +7,50 @@
 #define SLUGMALLOC_C
 #include "slugmalloc.h"
 
-#define TAG "CS-111-OS"
+#define TAG "CS-111"
+#define print_function(s) printf("%s:%s\n", TAG, s)
 
-void print_slug_mem_t(slug_mem_t elem) {
-	printf("%p|%s|%s|%d|%d\n", 
-		elem->addr, elem->file, elem->line, elem->timestamp, elem->flags);
+char *ext = "";
+
+/*Prints flag of the top of the allocs array/stack
+	ie: SLUG_MEM->flags[SLUG_MEM->size]*/
+void print_slug_mem_t(slug_mem_t elem, char *extra) {
+	printf("%s:%p|%s|%s|%d|%d\n", 
+		extra, elem->addr, elem->file, 
+		elem->line, elem->timestamp, 
+		SLUG_MEM->flags[SLUG_MEM->size]);
 }
 
 void print_slug_mem(void) {
 	int i, num_mallocs, num_nulls;
+	slug_mem_t elem;
+
 	num_nulls = 0;
 	num_mallocs = 0;
 
+	printf("%s:%s\n", ">>>" TAG, "print_slug_mem");
 	printf("size:%d|max_size:%d\n", SLUG_MEM->size, SLUG_MEM->max_size);
 	for (i = 0; i < SLUG_MEM->max_size; i++) {
 		if (SLUG_MEM->allocs[i] != NULL) {
-			if (SLUG_MEM->allocs[i]->flags == 1) {
+			if (SLUG_MEM->flags[i] == 1) {
 				printf("c.");
 				continue;
 			}
 			printf("s!");
 			num_mallocs++;
 			printf("%d:", i);
-			print_slug_mem_t(SLUG_MEM->allocs[i]);
+			elem = SLUG_MEM->allocs[i];
+			printf("%s:%p|%s|%s|%d|%d\n", 
+				"SLUG_MEM", elem->addr, elem->file, 
+				elem->line, elem->timestamp, 
+				SLUG_MEM->flags[i]);
 		} else {
 			num_nulls++;
 		}
 	}
 
 	printf("mallocs:%d|nulls:%d\n", num_mallocs, num_nulls);
+	printf("%s:%s\n", "<<<" TAG, "print_slug_mem");
 }
 
 int add_slug_mem(void *ptr, char *FILE_POS) 
@@ -45,7 +60,8 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 	char buf1[128];
 	char buf2[32];
 
-	printf("ptr:%p file_pos:%s\n", ptr, FILE_POS);
+	printf("%s:%s\n", ">>>" TAG, "add_slug_mem");
+	printf("ptr:%p FILE_POS:%s\n", ptr, FILE_POS);
 	printf("size:%d max_size:%d\n", 
 		SLUG_MEM->size, SLUG_MEM->max_size);
 
@@ -55,7 +71,8 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 		SLUG_MEM->max_size = SLUG_MEM->max_size * 4;
 		SLUG_MEM->allocs =
 			realloc(SLUG_MEM->allocs, SLUG_MEM->max_size * sizeof(slug_mem_t));
-			/*anthony: needed to be ... * sizeof(...)*/
+		SLUG_MEM->flags =
+			realloc(SLUG_MEM->flags, SLUG_MEM->max_size * sizeof(int));
 		print_slug_mem();
 	}
 
@@ -71,52 +88,47 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 		try doing it without the extra buffers, 
 		as I think the prob was with flags = 0 >.<*/
 	strcpy(file_pos, FILE_POS);
-	strcpy( buf1, strtok(file_pos, "|") ); 
-	slugT->file = strdup( buf1 );
-	strcpy( buf2, strtok(NULL, "|") );
-	slugT->line = strdup( buf2 );
 
-	print_slug_mem_t(slugT);
+	slugT->file = strdup( strtok(file_pos, "|") );
+	slugT->line = strdup( strtok(NULL, "|") );
+
+	print_slug_mem_t(slugT, "slugT");
 
 	slugT->timestamp = time(NULL);
-	/*slugT->flags = 0; 
-		anthony: somehow this fux up slugT->file, wat?*/
+	SLUG_MEM->flags[SLUG_MEM->size] = 0; 
 
 	SLUG_MEM->allocs[SLUG_MEM->size] = slugT;
-	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size]);
+	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size], "allocs");
+	print_slug_mem_t(slugT, "slugT");
 	SLUG_MEM->size++;
+	printf("%s:%s\n", "<<<" TAG, "add_slug_mem");
 }
 
 void *slug_malloc(size_t size, char *FILE_POS) 
 {
 	void *ptr;
 
-	printf("%s:%s: %s\n", TAG, FILE_POS, "slug_malloc");
+	printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_malloc");
 	if (SLUG_MEM == NULL) {
 		printf("%s\n", "INIT-IALIZING");
 		SLUG_MEM = calloc(1, sizeof(slug_mem));
 		SLUG_MEM->size = 0;
 		SLUG_MEM->max_size = 8;
 		SLUG_MEM->allocs = calloc(SLUG_MEM->max_size, sizeof(slug_mem_t));
+		SLUG_MEM->flags = calloc(SLUG_MEM->max_size, sizeof(int));
 	}
 	ptr = malloc(size);
 	add_slug_mem(ptr, FILE_POS);
+
+	printf("%s:%s\n", "<<<" TAG, "slug_malloc");
 	return ptr;
 }
 
 void slug_free(void *ptr, char *FILE_POS) 
 {
-	int i;
-	printf("%s:%s: %s\n", TAG, FILE_POS, "slug_free\n");
-
-	/*anthony: WRONG(?)*/
-	/*for (i = 0; i < SLUG_MEM->max_size; i++) {
-		if (SLUG_MEM->allocs[i] != NULL 
-				&& SLUG_MEM->allocs[i]->flags == 0
-				&& SLUG_MEM->allocs[i]->addr == ptr) {
-			SLUG_MEM->allocs[i]->flags = 1;
-		}
-	}*/
+	printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_free");
 
 	free(ptr);
+
+	printf("%s:%s\n", "<<<" TAG, "slug_free");
 }

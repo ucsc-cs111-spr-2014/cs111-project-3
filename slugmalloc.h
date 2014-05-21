@@ -7,13 +7,13 @@
 		char *file;
 		char *line;
 		time_t timestamp;
-		int flags;
 	} *slug_mem_t;
 
 	typedef struct {
-		slug_mem_t *allocs;
 		int size;
 		int max_size;
+		slug_mem_t *allocs;
+		int *flags;
 	} *slug_mem;
 
 	slug_mem SLUG_MEM;

@@ -1,21 +1,24 @@
 #include "slugmalloc.h"
+#include <assert.h>
 
 int main(int argc, char *argv[]) {
-    int *ptr_one, i;
+    int i;
+    for (i = 0; i < 23; i++) {printf("=");}
+    printf("\n");
+    
+    test_malloc(0);
 
-    for (i = 0; i < 6; i++) {
-        ptr_one = (int *) malloc(sizeof(int));
+    for (i = 0; i < 23; i++) {printf("=");}
+    printf("\n");
+    return 0;
+}
 
-        if (ptr_one == NULL) {
-            printf("ERROR: Out of memory\n");
-            return 1;
-        }
+int test_malloc(int init) {
+    int *ptr = (int *) malloc(sizeof(int));
+    assert(ptr != NULL);
 
-        *ptr_one = i;
-        printf("%d\n", *ptr_one);
-
-        /*free(ptr_one);*/
-    }
+    *ptr = init;
+    printf("ptr:%d\n", *ptr);
 
     print_slug_mem();
 
