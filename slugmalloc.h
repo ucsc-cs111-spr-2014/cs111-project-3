@@ -1,6 +1,8 @@
 #ifndef SLUGMALLOC_H
 	#define SLUGMALLOC_H
 	#include <time.h>
+	
+	typedef enum { used=0, freed=1 } bool;
 
 	typedef struct {
 		void *addr;

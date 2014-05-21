@@ -3,12 +3,12 @@
 
 int main(int argc, char *argv[]) {
     int i;
-    for (i = 0; i < 23; i++) {printf("=");}
+    for (i = 0; i < 32; i++) {printf("=");}
     printf("\n");
     
     test_malloc(0);
 
-    for (i = 0; i < 23; i++) {printf("=");}
+    for (i = 0; i < 32; i++) {printf("=");}
     printf("\n");
     return 0;
 }
@@ -20,7 +20,5 @@ int test_malloc(int init) {
     *ptr = init;
     printf("ptr:%d\n", *ptr);
 
-    print_slug_mem();
-
-    return 0;
+	return 0;
 }

@@ -32,8 +32,8 @@ void print_slug_mem(void) {
 	printf("size:%d|max_size:%d\n", SLUG_MEM->size, SLUG_MEM->max_size);
 	for (i = 0; i < SLUG_MEM->max_size; i++) {
 		if (SLUG_MEM->allocs[i] != NULL) {
-			if (SLUG_MEM->flags[i] == 1) {
-				printf("c.");
+			if (SLUG_MEM->flags[i] == freed) {
+				printf("c.%d\n", i);
 				continue;
 			}
 			printf("s!");
@@ -95,7 +95,7 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 	print_slug_mem_t(slugT, "slugT");
 
 	slugT->timestamp = time(NULL);
-	SLUG_MEM->flags[SLUG_MEM->size] = 0; 
+	SLUG_MEM->flags[SLUG_MEM->size] = used; 
 
 	SLUG_MEM->allocs[SLUG_MEM->size] = slugT;
 	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size], "allocs");
@@ -126,9 +126,18 @@ void *slug_malloc(size_t size, char *FILE_POS)
 
 void slug_free(void *ptr, char *FILE_POS) 
 {
+	int i;
+	i = 0;
 	printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_free");
 
-	free(ptr);
-
+	for(i=0; i < SLUG_MEM->size; i++) {
+		if (SLUG_MEM->allocs[i] != NULL) {
+			if(SLUG_MEM->allocs[i]->addr == ptr) {
+				SLUG_MEM->allocs[i]->flags = freed;
+				free(ptr);
+				break;
+			}
+		}
+	}
 	printf("%s:%s\n", "<<<" TAG, "slug_free");
 }
