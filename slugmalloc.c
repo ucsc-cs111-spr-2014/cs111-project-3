@@ -21,13 +21,13 @@ char buffy[128];
 ##        ##     ## #### ##    ##    ##    ####### ######## ######## ######## ##     ## 
 */
 /*Prints flag of the top of the allocs array/stack
-	ie: SLUG_MEM->flags[SLUG_MEM->size]*/
+	ie: SLUG_MEM.flags[SLUG_MEM.size]*/
 void print_slug_mem_t(slug_mem_t elem, char *extra) {
 	printf("%s", buffy);
-	printf("%s:%p|%s|%s|%d|%d\n", 
-		extra, elem->addr, elem->file, 
-		elem->line, elem->timestamp, 
-		SLUG_MEM->flags[SLUG_MEM->size]);
+	printf("%s:%p|%s|%s|%d|%d|%d\n", 
+		extra, elem.addr, elem.file, 
+		elem.line, elem.timestamp, 
+		elem.flags, elem.size);
 }
 
 /*
@@ -50,21 +50,21 @@ void print_slug_mem(void) {
 	strcat(buffy, "\t"); 
 
 	printf("%s", buffy);
-	printf("size:%d|max_size:%d\n", SLUG_MEM->size, SLUG_MEM->max_size);
-	for (i = 0; i < SLUG_MEM->max_size; i++) {
-		if (SLUG_MEM->allocs[i] != NULL) {
-			if (SLUG_MEM->flags[i] == freed) {
+	printf("size:%d|max_size:%d\n", SLUG_MEM.size, SLUG_MEM.max_size);
+	for (i = 0; i < SLUG_MEM.max_size; i++) {
+		if (SLUG_MEM.allocs[i].size != -1) {
+			if (SLUG_MEM.allocs[i].flags == freed) {
 				printf("c.%d\n", i);
 				continue;
 			}
 			printf("%s", buffy);printf("s!");
 			num_mallocs++;
 			printf("%d:", i);
-			elem = SLUG_MEM->allocs[i];
-			printf("%s:%p|%s|%s|%d|%d\n", 
-				"SLUG_MEM", elem->addr, elem->file, 
-				elem->line, elem->timestamp, 
-				SLUG_MEM->flags[i]);
+			elem = SLUG_MEM.allocs[i];
+			printf("%s:%p|%s|%s|%d|%d|%d\n", 
+				"SLUG_MEM", elem.addr, elem.file, 
+				elem.line, elem.timestamp, 
+				elem.flags, elem.size);
 		} else {
 			num_nulls++;
 		}
@@ -84,56 +84,49 @@ void print_slug_mem(void) {
 ##     ## ##     ## ##     ##         ##       ##       ##       ##     ## 
 ##     ## ########  ########  ####### ######## ######## ######## ##     ## 
 */
-int add_slug_mem(void *ptr, char *FILE_POS) 
+int add_slug_mem(void *ptr, char *FILE_POS, size_t size) 
 {
 	slug_mem_t slugT;
 	char file_pos[64];
-	char buf1[128];
-	char buf2[32];
+	int i;
 
 	printf("%s", buffy);printf("%s:%s\n", ">>>" TAG, "add_slug_mem");
 	strcat(buffy, "\t"); 
 
 	printf("%s", buffy);printf("ptr:%p FILE_POS:%s\n", ptr, FILE_POS);
 	printf("%s", buffy);printf("size:%d max_size:%d\n", 
-		SLUG_MEM->size, SLUG_MEM->max_size);
+		SLUG_MEM.size, SLUG_MEM.max_size);
 
-	if((SLUG_MEM->size * 2) > SLUG_MEM->max_size) {
+	if((SLUG_MEM.size * 2) > SLUG_MEM.max_size) {
 		printf("%s", buffy);printf("%s\n", "REALLOC-ATING");
 		
-		SLUG_MEM->max_size = SLUG_MEM->max_size * 4;
-		SLUG_MEM->allocs =
-			realloc(SLUG_MEM->allocs, SLUG_MEM->max_size * sizeof(slug_mem_t));
-		SLUG_MEM->flags =
-			realloc(SLUG_MEM->flags, SLUG_MEM->max_size * sizeof(int));
-		print_slug_mem();
+		SLUG_MEM.max_size = SLUG_MEM.max_size * 4;
+		SLUG_MEM.allocs =
+			realloc(SLUG_MEM.allocs, SLUG_MEM.max_size * sizeof(slug_mem_t));
+		for (i = SLUG_MEM.size+1; i < SLUG_MEM.max_size; i++){
+			SLUG_MEM.allocs[i].size = -1;
+		}
 	}
 
-	/*anthony: why do we allocate new mem for slugT when 
-		we have a whole array we should be using?*/
-	slugT = calloc(1, sizeof(slug_mem_t));
-	/*anthony: why isn't flags init to 0 here? 
-		I get it as big int (eg 1953719668) instead*/
-
-	slugT->addr = ptr;
+	slugT.addr = ptr;
 
 	/*anthony: not sure this is the best method
 		try doing it without the extra buffers, 
 		as I think the prob was with flags = 0 >.<*/
 	strcpy(file_pos, FILE_POS);
 
-	slugT->file = strdup( strtok(file_pos, "|") );
-	slugT->line = strdup( strtok(NULL, "|") );
+	slugT.file = strdup( strtok(file_pos, "|") );
+	slugT.line = strdup( strtok(NULL, "|") );
 
 	print_slug_mem_t(slugT, "slugT");
 
-	slugT->timestamp = time(NULL);
-	SLUG_MEM->flags[SLUG_MEM->size] = used; 
-
-	SLUG_MEM->allocs[SLUG_MEM->size] = slugT;
-	print_slug_mem_t(SLUG_MEM->allocs[SLUG_MEM->size], "allocs");
+	slugT.timestamp = time(NULL);
+	slugT.flags = used; 
+	slugT.size = size;
+	SLUG_MEM.allocs[SLUG_MEM.size] = slugT;
+	print_slug_mem_t(SLUG_MEM.allocs[SLUG_MEM.size], "allocs");
 	print_slug_mem_t(slugT, "slugT");
-	SLUG_MEM->size++;
+	SLUG_MEM.size++;
 
 	*strrchr(buffy, '\t') = (char)0;
 	printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "add_slug_mem");
@@ -151,23 +144,24 @@ int add_slug_mem(void *ptr, char *FILE_POS)
 void *slug_malloc(size_t size, char *FILE_POS) 
 {
 	void *ptr;
-
+	int i;
 	printf("%s", buffy);
 	printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_malloc");
 	strcat(buffy, "\t"); 
 
-	if (SLUG_MEM == NULL) {
+	if (pntr == NULL) {
 		printf("%s", buffy);printf("%s\n", "INIT-IALIZING");
-		SLUG_MEM = calloc(1, sizeof(slug_mem));
-		SLUG_MEM->size = 0;
-		SLUG_MEM->max_size = 8;
-		SLUG_MEM->allocs = calloc(SLUG_MEM->max_size, sizeof(slug_mem_t));
-		SLUG_MEM->flags = calloc(SLUG_MEM->max_size, sizeof(int));
-
+		SLUG_MEM.size = 0;
+		SLUG_MEM.max_size = 8;
+		SLUG_MEM.allocs = calloc(SLUG_MEM.max_size, sizeof(slug_mem_t));
+		for (i = 0; i < SLUG_MEM.max_size; i++){
+			SLUG_MEM.allocs[i].size = -1;
+		}
+		pntr = &SLUG_MEM;
 		atexit(print_slug_mem);
 	}
 	ptr = malloc(size);
-	add_slug_mem(ptr, FILE_POS);
+	add_slug_mem(ptr, FILE_POS, size);
 
 	*strrchr(buffy, '\t') = (char)0;
 	printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_malloc");
@@ -191,10 +185,10 @@ void slug_free(void *ptr, char *FILE_POS)
 	printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_free");
 	strcat(buffy, "\t"); 
 
-	for(i=0; i < SLUG_MEM->size; i++) {
-		if (SLUG_MEM->allocs[i] != NULL) {
-			if(SLUG_MEM->allocs[i]->addr == ptr) {
-				SLUG_MEM->flags[i] = freed;
+	for(i=0; i < SLUG_MEM.size; i++) {
+		if (SLUG_MEM.allocs[i].size != -1) {
+			if(SLUG_MEM.allocs[i].addr == ptr) {
+				SLUG_MEM.allocs[i].flags = freed;
 				free(ptr);
 				break;
 			}
@@ -202,4 +196,21 @@ void slug_free(void *ptr, char *FILE_POS)
 	}
 	*strrchr(buffy, '\t') = (char)0;
 	printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_free");
+}
+
+/* All allocations:
+	-Size of allocation
+	-Timestamp for when the allocation took place
+	-The actual address of the allocations
+	-The file name
+	-The line number in the test program where the allocation happened
+   Overall:
+   	-Total number of allocations done (size)
+   	-The number of current active allocations (size-frees)?
+   	-The mean and standard deviation of sizes that have been allocated
+*/
+
+void slug_memstats(void)
+{
+
 }

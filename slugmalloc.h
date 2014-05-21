@@ -9,16 +9,18 @@
 		char *file;
 		char *line;
 		time_t timestamp;
-	} *slug_mem_t;
+		int flags;
+		size_t size;
+	} slug_mem_t;
 
 	typedef struct {
 		int size;
 		int max_size;
 		slug_mem_t *allocs;
-		int *flags;
-	} *slug_mem;
+	} slug_mem;
 
 	slug_mem SLUG_MEM;
+	slug_mem *pntr;
 
 	#ifndef SLUGMALLOC_C
 
