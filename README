@@ -1,14 +1,30 @@
 make sure we:
 -atexit
-	-print mem stats
-  		-sizes and total size
-       		-mean and std dev
-       		-pretty printing
-           		-sort by free/used
-           		-sort by file
-           		-sort by line
+    -print mem stats
+        -sizes and total size
+            -mean and std dev
+            -pretty printing
+                -sort by free/used
+                -sort by file
+                -sort by line
     -free our shit
 -fix realloc
 -make design doc
 
+>>>>>>>> DELETE ABOVE INFO AFTER WE ARE DONE PROGRAMMING <<<<<<<<<<<
 
+CREATED 5/21/2014
+
+CREATED BY: Rachelle Tanase (rtanase@ucsc.edu)
+            Jordan Hyman (jahyman@ucsc.edu)
+            Anthony D'Ambrosio (adambros@ucsc.edu)
+            Cameron Gravel (cgravel@ucsc.edu)
+
+To compile, just copy the files into minix and run ./mk.build
+
+If mk.build is not executable use chmod u+x mk.build, and run ./mk.build
+
+To test our program using our test file, run ./testing
+
+To use your own code compile your code however necessary, include slugmalloc.h
+and run your executable.
