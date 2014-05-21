@@ -3,12 +3,12 @@
 
 int main(int argc, char *argv[]) {
     int i;
-    for (i = 0; i < 32; i++) {printf("=");}
+    for (i = 0; i < 64; i++) {printf("=");}
     printf("\n");
     
     test_malloc(0);
 
-    for (i = 0; i < 32; i++) {printf("=");}
+    for (i = 0; i < 64; i++) {printf("=");}
     printf("\n");
     return 0;
 }
