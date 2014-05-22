@@ -4,21 +4,43 @@ make sure we:
     -create mk.test
     -make design doc
 --------------------------------------------------------------------
-==17826== 
-==17826== HEAP SUMMARY:
-==17826==     in use at exit: 122 bytes in 20 blocks
-==17826==   total heap usage: 26 allocs, 6 frees, 2,060 bytes allocated
-==17826== 
-==17826== LEAK SUMMARY:
-==17826==    definitely lost: 122 bytes in 20 blocks
-==17826==    indirectly lost: 0 bytes in 0 blocks
-==17826==      possibly lost: 0 bytes in 0 blocks
-==17826==    still reachable: 0 bytes in 0 blocks
-==17826==         suppressed: 0 bytes in 0 blocks
-==17826== Rerun with --leak-check=full to see details of leaked memory
-==17826== 
-==17826== For counts of detected and suppressed errors, rerun with: -v
-==17826== ERROR SUMMARY: 4 errors from 1 contexts (suppressed: 2 from 2)
+=========================VALGRIND OUTPUT============================
+=================FREEING 512 OF 1024 ALLOCATIONS====================
+==19090== 
+==19090== HEAP SUMMARY:
+==19090==     in use at exit: 14,592 bytes in 2,560 blocks
+==19090==   total heap usage: 3,081 allocs, 521 frees, 212,096 bytes allocated
+==19090== 
+==19090== LEAK SUMMARY:
+==19090==    definitely lost: 14,592 bytes in 2,560 blocks
+==19090==    indirectly lost: 0 bytes in 0 blocks
+==19090==      possibly lost: 0 bytes in 0 blocks
+==19090==    still reachable: 0 bytes in 0 blocks
+==19090==         suppressed: 0 bytes in 0 blocks
+==19090== Rerun with --leak-check=full to see details of leaked memory
+==19090== 
+==19090== For counts of detected and suppressed errors, rerun with: -v
+==19090== ERROR SUMMARY: 512 errors from 1 contexts (suppressed: 2 from 2)
+
+====================FREEING ALL 1024 ALLOCATIONS=====================
+==19135== 
+==19135== HEAP SUMMARY:
+==19135==     in use at exit: 13,312 bytes in 2,048 blocks
+==19135==   total heap usage: 3,081 allocs, 1,033 frees, 212,096 bytes allocated
+==19135== 
+==19135== LEAK SUMMARY:
+==19135==    definitely lost: 13,312 bytes in 2,048 blocks
+==19135==    indirectly lost: 0 bytes in 0 blocks
+==19135==      possibly lost: 0 bytes in 0 blocks
+==19135==    still reachable: 0 bytes in 0 blocks
+==19135==         suppressed: 0 bytes in 0 blocks
+==19135== Rerun with --leak-check=full to see details of leaked memory
+==19135== 
+==19135== For counts of detected and suppressed errors, rerun with: -v
+==19135== ERROR SUMMARY: 512 errors from 1 contexts (suppressed: 2 from 2)
+
+I dont really understand why we get 512 errors both ways
+-----------------------------------------------------------------------------
 >>>>>>>> DELETE ABOVE INFO AFTER WE ARE DONE PROGRAMMING <<<<<<<<<<<
 
 CREATED 5/21/2014
