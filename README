@@ -5,41 +5,20 @@ make sure we:
     -make design doc
 --------------------------------------------------------------------
 =========================VALGRIND OUTPUT============================
-=================FREEING 512 OF 1024 ALLOCATIONS====================
-==19090== 
-==19090== HEAP SUMMARY:
-==19090==     in use at exit: 14,592 bytes in 2,560 blocks
-==19090==   total heap usage: 3,081 allocs, 521 frees, 212,096 bytes allocated
-==19090== 
-==19090== LEAK SUMMARY:
-==19090==    definitely lost: 14,592 bytes in 2,560 blocks
-==19090==    indirectly lost: 0 bytes in 0 blocks
-==19090==      possibly lost: 0 bytes in 0 blocks
-==19090==    still reachable: 0 bytes in 0 blocks
-==19090==         suppressed: 0 bytes in 0 blocks
-==19090== Rerun with --leak-check=full to see details of leaked memory
-==19090== 
-==19090== For counts of detected and suppressed errors, rerun with: -v
-==19090== ERROR SUMMARY: 512 errors from 1 contexts (suppressed: 2 from 2)
+It was the same output for PARTIAL_FREE at 0 and 1
 
-====================FREEING ALL 1024 ALLOCATIONS=====================
-==19135== 
-==19135== HEAP SUMMARY:
-==19135==     in use at exit: 13,312 bytes in 2,048 blocks
-==19135==   total heap usage: 3,081 allocs, 1,033 frees, 212,096 bytes allocated
-==19135== 
-==19135== LEAK SUMMARY:
-==19135==    definitely lost: 13,312 bytes in 2,048 blocks
-==19135==    indirectly lost: 0 bytes in 0 blocks
-==19135==      possibly lost: 0 bytes in 0 blocks
-==19135==    still reachable: 0 bytes in 0 blocks
-==19135==         suppressed: 0 bytes in 0 blocks
-==19135== Rerun with --leak-check=full to see details of leaked memory
-==19135== 
-==19135== For counts of detected and suppressed errors, rerun with: -v
-==19135== ERROR SUMMARY: 512 errors from 1 contexts (suppressed: 2 from 2)
 
-I dont really understand why we get 512 errors both ways
+==20003== 
+==20003== HEAP SUMMARY:
+==20003==     in use at exit: 0 bytes in 0 blocks
+==20003==   total heap usage: 390 allocs, 390 frees, 26,240 bytes allocated
+==20003== 
+==20003== All heap blocks were freed -- no leaks are possible
+==20003== 
+==20003== For counts of detected and suppressed errors, rerun with: -v
+==20003== ERROR SUMMARY: 64 errors from 1 contexts (suppressed: 2 from 2)
+
+Still 64 errors? but idk looks good for leaks
 -----------------------------------------------------------------------------
 >>>>>>>> DELETE ABOVE INFO AFTER WE ARE DONE PROGRAMMING <<<<<<<<<<<
 
