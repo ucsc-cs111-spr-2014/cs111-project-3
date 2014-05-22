@@ -26,10 +26,10 @@ char buffy[128];
 void print_slug_mem_t(slug_mem_t elem, char *extra) 
 {
     printf("%s", buffy);
-    printf("%6s:%8p|%12s|%4s|%d|%2lu\n", 
+    printf("<%8s:%8p|%12s|%4s|%d|%2d|%2lu>\n", 
         extra, elem.addr, elem.file, 
         elem.line, elem.timestamp, 
-        elem.size);
+        elem.flags, elem.size);
 }
 #endif
 
@@ -254,6 +254,12 @@ void slug_free(void *ptr, char *FILE_POS)
  */
 void slug_free_mem(void)
 {
+    for(i = 0; i < SLUG_MEM.size; i++) {
+        free(SLUG_MEM.allocs[i].file);
+        free(SLUG_MEM.allocs[i].line);
+        if (SLUG_MEM.allocs[i].flags != freed)
+            free(SLUG_MEM.allocs[i].addr);
+    }
     free(SLUG_MEM.allocs);
     pntr = NULL;
 }
@@ -279,28 +285,30 @@ void slug_memstats(void)
 {
     int i;
     int num_allocs;
-    size_t tot_mem;
+    size_t tot_mem; size_t in_use_mem;
     double sum;
     double mean;
     double std_dev;
 
-    num_allocs = 0;
-    tot_mem = 0;
-    sum = 0.;
-    mean = 0.;
+    num_allocs = 0; 
+    tot_mem = 0; 
+    in_use_mem = 0;
+    sum = 0.; 
+    mean = 0.; 
     std_dev = 0.;
 
     print_slug_mem();
 
     for (i = 0; i < SLUG_MEM.size; i++) {
+        tot_mem += SLUG_MEM.allocs[i].size;
         if (SLUG_MEM.allocs[i].flags == used) {
             num_allocs++;
-            tot_mem += SLUG_MEM.allocs[i].size;
+            in_use_mem += SLUG_MEM.allocs[i].size;
         }
     }
     printf("%30s %6d\n", "Number of current allocations:", num_allocs);
 
-    printf("%30s %6d\n", "Total memory in use:", tot_mem);
+    printf("%30s %6d\n", "Total memory still in use:", in_use_mem);
     printf("%30s %6d\n", "Total number of allocations:", SLUG_MEM.size);
 
     mean = tot_mem / (double)SLUG_MEM.size;
