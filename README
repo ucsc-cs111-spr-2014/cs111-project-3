@@ -3,7 +3,22 @@ make sure we:
     -test with multiple files
     -create mk.test
     -make design doc
-
+--------------------------------------------------------------------
+==17826== 
+==17826== HEAP SUMMARY:
+==17826==     in use at exit: 122 bytes in 20 blocks
+==17826==   total heap usage: 26 allocs, 6 frees, 2,060 bytes allocated
+==17826== 
+==17826== LEAK SUMMARY:
+==17826==    definitely lost: 122 bytes in 20 blocks
+==17826==    indirectly lost: 0 bytes in 0 blocks
+==17826==      possibly lost: 0 bytes in 0 blocks
+==17826==    still reachable: 0 bytes in 0 blocks
+==17826==         suppressed: 0 bytes in 0 blocks
+==17826== Rerun with --leak-check=full to see details of leaked memory
+==17826== 
+==17826== For counts of detected and suppressed errors, rerun with: -v
+==17826== ERROR SUMMARY: 4 errors from 1 contexts (suppressed: 2 from 2)
 >>>>>>>> DELETE ABOVE INFO AFTER WE ARE DONE PROGRAMMING <<<<<<<<<<<
 
 CREATED 5/21/2014
