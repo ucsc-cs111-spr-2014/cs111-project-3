@@ -200,6 +200,7 @@ void add_slug_mem(void *ptr, char *FILE_POS, size_t size)
             SLUG_MEM.size, SLUG_MEM.max_size);
     #endif
 
+    /* if SLUG_MEM's array is full */
     if( SLUG_MEM.size == (SLUG_MEM.max_size-1) ) {        
         SLUG_MEM.max_size = SLUG_MEM.max_size * 2;
         SLUG_MEM.allocs =
@@ -209,16 +210,15 @@ void add_slug_mem(void *ptr, char *FILE_POS, size_t size)
         }
     }
 
-    slug_x.addr = ptr;
-
     strcpy(file_pos, FILE_POS);
 
+    slug_x.addr = ptr;
     slug_x.file = strdup( strtok(file_pos, "|") );
     slug_x.line = strdup( strtok(NULL, "|") );
-
     slug_x.timestamp = time(NULL);
     slug_x.flags = used; 
     slug_x.size = size;
+
     SLUG_MEM.allocs[SLUG_MEM.size] = slug_x;
     SLUG_MEM.size++;
 
