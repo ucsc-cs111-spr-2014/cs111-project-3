@@ -38,7 +38,8 @@ void *slug_malloc(size_t size, char *FILE_POS)
         printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_malloc");
         strcat(buffy, "\t"); 
     #endif
-
+    
+    /* if SLUG_MALLOC is not initialized */
     if (pntr == NULL) {
         SLUG_MEM.size = 0;
         SLUG_MEM.max_size = 8;
