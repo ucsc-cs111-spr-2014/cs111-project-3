@@ -14,18 +14,22 @@
 
 #define TAG "CS-111"
 
+#define DEBUG_PRINT 0
+
 char buffy[128];
 
 int slug_atexit(void);
 
+#if DEBUG_PRINT
 void print_slug_mem_t(slug_mem_t elem, char *extra) 
 {
     printf("%s", buffy);
-    printf("%s:%p|%s|%s|%d|%d|%d\n", 
+    printf("%6s:%8p|%12s|%4s|%d|%2lu\n", 
         extra, elem.addr, elem.file, 
         elem.line, elem.timestamp, 
-        elem.flags, elem.size);
+        elem.size);
 }
+#endif
 
 void print_slug_mem(void) 
 {
@@ -35,29 +39,43 @@ void print_slug_mem(void)
     num_nulls = 0;
     num_mallocs = 0;
 
-    printf("%s", buffy);printf("%s:%s\n", ">>>" TAG, "print_slug_mem");
-    strcat(buffy, "\t"); 
+    #if DEBUG_PRINT
+        printf("%s", buffy);printf("%s:%s\n", ">>>" TAG, "print_slug_mem");
+        strcat(buffy, "\t"); 
+        printf("%s", buffy);
+        printf("size:%d|max_size:%d\n", SLUG_MEM.size, SLUG_MEM.max_size);
+    #endif
 
-    printf("%s", buffy);
-    printf("size:%d|max_size:%d\n", SLUG_MEM.size, SLUG_MEM.max_size);
+    printf("%s\n", "MEMORY STILL IN USE:");
     for (i = 0; i < SLUG_MEM.max_size; i++) {
         if (SLUG_MEM.allocs[i].size != -1) {
+            if (SLUG_MEM.allocs[i].flags == freed) 
+                continue;
             num_mallocs++;
-            printf("%s", buffy);
-            printf("%d:", i);
+            #if DEBUG_PRINT
+                printf("%s", buffy);
+            #endif
+            printf("%6d: ", i);
             elem = SLUG_MEM.allocs[i];
-            printf("%p|%s|%s|%d|%d|%d\n", 
+            printf("%8p| %12s| %4s| %d| %6lu\n", 
                 elem.addr, elem.file, 
                 elem.line, elem.timestamp, 
-                elem.flags, elem.size);
+                elem.size);
         } else {
             num_nulls++;
         }
     }
-    printf("%s", buffy);printf("mallocs:%d|nulls:%d\n", num_mallocs, num_nulls);
+    printf("%6s: %8s| %12s| %4s|  %s| %6s\n\n", "pos", 
+                "addr", "file", 
+                "line", "timestamp", 
+                "size");
 
-    *strrchr(buffy, '\t') = (char)0;
-    printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "print_slug_mem");
+
+    #if DEBUG_PRINT
+        printf("%s", buffy);printf("mallocs:%d|nulls:%d\n", num_mallocs, num_nulls);
+        *strrchr(buffy, '\t') = (char)0;
+        printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "print_slug_mem");
+    #endif
 }
 
 int add_slug_mem(void *ptr, char *FILE_POS, size_t size) 
@@ -66,17 +84,16 @@ int add_slug_mem(void *ptr, char *FILE_POS, size_t size)
     char file_pos[64];
     int i;
 
-    printf("%s", buffy);printf("%s:%s\n", ">>>" TAG, "add_slug_mem");
-    strcat(buffy, "\t"); 
+    #if DEBUG_PRINT
+        printf("%s", buffy);printf("%s:%s\n", ">>>" TAG, "add_slug_mem");
+        strcat(buffy, "\t"); 
+        printf("%s", buffy);printf("ptr:%p FILE_POS:%s\n", ptr, FILE_POS);
+        printf("%s", buffy);printf("size:%d max_size:%d\n", 
+            SLUG_MEM.size, SLUG_MEM.max_size);
+    #endif
 
-    printf("%s", buffy);printf("ptr:%p FILE_POS:%s\n", ptr, FILE_POS);
-    printf("%s", buffy);printf("size:%d max_size:%d\n", 
-        SLUG_MEM.size, SLUG_MEM.max_size);
-
-    if((SLUG_MEM.size * 2) > SLUG_MEM.max_size) {
-        printf("%s", buffy);printf("%s\n", "REALLOC-ATING");
-        
-        SLUG_MEM.max_size = SLUG_MEM.max_size * 4;
+    if( SLUG_MEM.size == (SLUG_MEM.max_size-1) ) {        
+        SLUG_MEM.max_size = SLUG_MEM.max_size * 2;
         SLUG_MEM.allocs =
             realloc(SLUG_MEM.allocs, SLUG_MEM.max_size * sizeof(slug_mem_t));
         for (i = SLUG_MEM.size+1; i < SLUG_MEM.max_size; i++){
@@ -95,23 +112,28 @@ int add_slug_mem(void *ptr, char *FILE_POS, size_t size)
     slugT.flags = used; 
     slugT.size = size;
     SLUG_MEM.allocs[SLUG_MEM.size] = slugT;
-    print_slug_mem_t(slugT, "slugT");
     SLUG_MEM.size++;
 
-    *strrchr(buffy, '\t') = (char)0;
-    printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "add_slug_mem");
+    #if DEBUG_PRINT
+        print_slug_mem_t(slugT, "slugT");
+
+        *strrchr(buffy, '\t') = (char)0;
+        printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "add_slug_mem");
+    #endif
 }
 
 void *slug_malloc(size_t size, char *FILE_POS) 
 {
     void *ptr;
     int i;
-    printf("%s", buffy);
-    printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_malloc");
-    strcat(buffy, "\t"); 
+
+    #if DEBUG_PRINT
+        printf("%s", buffy);
+        printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_malloc");
+        strcat(buffy, "\t"); 
+    #endif
 
     if (pntr == NULL) {
-        printf("%s", buffy);printf("%s\n", "INIT-IALIZING");
         SLUG_MEM.size = 0;
         SLUG_MEM.max_size = 8;
         SLUG_MEM.allocs = calloc(SLUG_MEM.max_size, sizeof(slug_mem_t));
@@ -121,51 +143,93 @@ void *slug_malloc(size_t size, char *FILE_POS)
         pntr = &SLUG_MEM;
         atexit(slug_atexit);
     }
+
+    /*ERROR CHECKING*/
+    if (size == 0) {
+        fprintf(stderr, "%s::%s %lu\n", FILE_POS,
+            "Error, allocation size was:", size);
+        return;
+    } else if (size > (128 * pow(2, 20)) ) {/*128Mi*/
+        fprintf(stderr, "%s::%s, size was: %lu\n", FILE_POS,
+            "Error, allocation size was too large", size);
+        slug_atexit();
+        abort();
+    } /*END CHECKING*/
+
     ptr = malloc(size);
     add_slug_mem(ptr, FILE_POS, size);
 
-    *strrchr(buffy, '\t') = (char)0;
-    printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_malloc");
+    #if DEBUG_PRINT
+        *strrchr(buffy, '\t') = (char)0;
+        printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_malloc");
+    #endif
     return ptr;
 }
 
 void slug_free(void *ptr, char *FILE_POS) 
 {
-    int i;
+    int i; 
+    int found_freed_match;
+    found_freed_match = 0;
     i = 0;
-    printf("%s", buffy);
-    printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_free");
-    strcat(buffy, "\t"); 
 
-    for(i=0; i < SLUG_MEM.size; i++) {
+    #if DEBUG_PRINT
+        printf("%s", buffy);
+        printf("%s%s%s%s:%s\n", ">>>", TAG, "-", FILE_POS, "slug_free");
+        strcat(buffy, "\t"); 
+    #endif
+
+    for(i = 0; i < SLUG_MEM.size; i++) {
         if (SLUG_MEM.allocs[i].size != -1) {
-            if(SLUG_MEM.allocs[i].addr == ptr
-                && SLUG_MEM.allocs[i].flags == used) {
-                SLUG_MEM.allocs[i].flags = freed;
-                free(ptr);
-                print_slug_mem_t(SLUG_MEM.allocs[i], "free");
-                break;
+            if(SLUG_MEM.allocs[i].addr == ptr) {
+                if (SLUG_MEM.allocs[i].flags == used) {
+                    SLUG_MEM.allocs[i].flags = freed;
+                    free(ptr);
+                    #if DEBUG_PRINT
+                        print_slug_mem_t(SLUG_MEM.allocs[i], "free");
+                    #endif
+                    break;
+                } else {
+                    found_freed_match = 1;
+                }
             }
         }
     }
-    *strrchr(buffy, '\t') = (char)0;
-    printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_free\n");
+    if (i == SLUG_MEM.size) {
+        if (found_freed_match) {
+            fprintf(stderr, "%s::%s\n", FILE_POS,
+                "Error: tried to free memory already freed");
+            slug_atexit();
+            abort();
+        } else {
+            fprintf(stderr, "%s::%s\n", FILE_POS,
+                "Error: tried to free non-malloc'ed memory");
+            slug_atexit();
+            abort();
+        }
+    }
+
+
+    #if DEBUG_PRINT
+        *strrchr(buffy, '\t') = (char)0;
+        printf("%s", buffy);printf("%s:%s\n", "<<<" TAG, "slug_free\n");
+    #endif
+}
+
+void slug_free_mem(void);
+void slug_memstats(void);
+
+int slug_atexit(void)
+{
+    slug_memstats();
+    slug_free_mem();
+    return 0;
 }
 
 void slug_free_mem(void)
 {
     free(SLUG_MEM.allocs);
     pntr = NULL;
-}
-
-void slug_memstats(void);
-
-int slug_atexit(void)
-{
-    printf("%s\n", "slug_atexit");
-    slug_memstats();
-    slug_free_mem();
-    return 0;
 }
 
 void slug_memstats(void)
@@ -184,7 +248,6 @@ void slug_memstats(void)
     std_dev = 0.;
 
     print_slug_mem();
-    printf("Number of allocations: %d\n", SLUG_MEM.size);
 
     for (i = 0; i < SLUG_MEM.size; i++) {
         if (SLUG_MEM.allocs[i].flags == used) {
@@ -192,8 +255,10 @@ void slug_memstats(void)
             tot_mem += SLUG_MEM.allocs[i].size;
         }
     }
-    printf("Total memory in use: %dB\n", tot_mem);
-    printf("Number current allocations: %d\n", num_allocs);
+    printf("%30s %6d\n", "Number of current allocations:", num_allocs);
+
+    printf("%30s %6d\n", "Total memory in use:", tot_mem);
+    printf("%30s %6d\n", "Total number of allocations:", SLUG_MEM.size);
 
     mean = tot_mem / (double)SLUG_MEM.size;
 
@@ -203,5 +268,5 @@ void slug_memstats(void)
     std_dev = sum / ((SLUG_MEM.size - 1)?(SLUG_MEM.size - 1):1);
     std_dev = sqrt(std_dev);
 
-    printf("Mean: %.2lfB, std_dev:%.2lfB\n", mean, std_dev);
+    printf("\nMean: %.2lfB, std_dev:%.2lfB\n", mean, std_dev);
 }
