@@ -6,6 +6,8 @@ make sure we:
 --------------------------------------------------------------------
 =========================VALGRIND OUTPUT============================
 It was the same output for PARTIAL_FREE at 0 and 1
+anthony: that's because i free everything in slug_atexit, 
+            if you remove that it should then be different
 
 
 ==20003== 

@@ -9,8 +9,17 @@
 /* This number is the number of malloc calls will be executed
  * NOTE: may not be the same as the number of frees
  *      ie: there may be fewer frees.
+ *      (see: PARTIAL_FREE)
  */
-#define NUM_MALLOCS 128
+#define NUM_MALLOCS 8
+
+/* Set this to 0 to not perform main test loop */
+#define MAIN_TEST 1
+
+/* Set this to 0 if you only want to test
+ * using test_malloc_int()
+ */
+#define ALTERNATE_MALLOC_TYPE 1
 
 /* Set this to 1 if you want to only free part (half) of the mallocs,
  * or 0 to free everything malloc'ed in the first for loop.
@@ -23,8 +32,14 @@
 /* Set this to 1 to test slug_malloc with a big size */
 #define BIG_ALLOC 0
 
-/* Set this to 1 to test slug_free's error checking */
+/* Set this to 1 to test slug_free with a double free call*/
 #define DOUBLE_FREE 0
+
+/* Set this to 1 to test slug_free's handling of a call to a free block
+ * that's not the first byte of the malloc'ed memory */
+#define WRONG_BYTE_FREE 1
+
+#define TAG "[testing.c]: "
 
 void test_malloc_int(int init);
 void test_malloc_char(int init);
@@ -42,14 +57,19 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < 16; i++) {printf("=");}
     printf("\n");
     
+    #if MAIN_TEST
     for (i = 0; i < NUM_MALLOCS; i++) {
+        #if ALTERNATE_MALLOC_TYPE
         if (i % 2 == 0) {
+        #endif
             test_malloc_int(i);
+        #if ALTERNATE_MALLOC_TYPE    
         } else {
             test_malloc_char(i);
         }
-        
+        #endif
     }
+    #endif
 
     #if ZERO_ALLOC
         ptr = (int *) malloc(0);
@@ -57,16 +77,25 @@ int main(int argc, char *argv[]) {
     #endif
 
     #if BIG_ALLOC
-        ptr = (int *) malloc(9999*9999*9999*9999);
+        ptr = (int *) malloc(128*1024*1024+1);/*ie: size > 128MiB*/
         /* should fail and terminate the program */
     #endif
 
     #if DOUBLE_FREE
         ptr = (int *) malloc(sizeof(int));
-        *ptr = 13; /* any number, doesn't matter */
-        printf("ptr:%d\n", *ptr);
+        *ptr = 13; /* test number, please ignore */
+        printf(TAG "ptr:%d\n", *ptr);
         free(ptr);
         free(ptr);
+        /* should fail and terminate the program */
+    #endif
+
+    #if WRONG_BYTE_FREE
+        ptr = (int *) malloc(sizeof(int));
+        *ptr = 13; /* test number, please ignore */
+        printf(TAG "ptr:%d\n", *ptr);
+        free(ptr+1);
+        /* should fail and terminate the program */
     #endif
 
     for (i = 0; i < 16; i++) {printf("=");}
@@ -92,7 +121,7 @@ void test_malloc_int(int init) {
     assert(ptr != NULL);
 
     *ptr = init;
-    printf("ptr:%d\n", *ptr);
+    printf(TAG "ptr:%d\n", *ptr);
 
     #if PARTIAL_FREE
     if (init % 4 == 0) {
@@ -108,7 +137,7 @@ void test_malloc_char(int init) {
     assert(ptr != NULL);
 
     *ptr = (char)init;
-    printf("ptr:%s\n", ptr);
+    printf(TAG "ptr:%s\n", ptr);
 
     #if PARTIAL_FREE
     if (init % 4 == 1) {
