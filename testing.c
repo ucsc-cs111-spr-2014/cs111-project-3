@@ -26,6 +26,9 @@
 /* Set this to 1 to test slug_free's error checking */
 #define DOUBLE_FREE 0
 
+void test_malloc_int(int init);
+void test_malloc_char(int init);
+
 /* main()
  * Purpose: 
  *      Does malloc testing 

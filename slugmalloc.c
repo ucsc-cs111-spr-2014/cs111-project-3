@@ -254,6 +254,7 @@ void slug_free(void *ptr, char *FILE_POS)
  */
 void slug_free_mem(void)
 {
+    int i;
     for(i = 0; i < SLUG_MEM.size; i++) {
         free(SLUG_MEM.allocs[i].file);
         free(SLUG_MEM.allocs[i].line);
