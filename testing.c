@@ -20,7 +20,7 @@
 /* main()
  * Purpose: Calls test malloc and formats the prints to make it easy to read.
  * Return Value: Returns 0 at the end of the function
-*/
+ */
 int main(int argc, char *argv[]) {
     int i; int *ptr;
     for (i = 0; i < 16; i++) {printf("=");}
@@ -57,16 +57,21 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-/* test_malloc()
- * Purpose: Function that contains buggy code to attempt to crash our slug_malloc()
- * and slug_free().
- * Return Value: Returns 0 at the end of the function.
- * Parameters: Takes in an int init which is the value we initialize ptr to.
- * Assumptions: Assumes init is an int (we don't check for it before hand)
-*/
-
+/* test_malloc_*()
+ * Purpose: 
+ *      Function that points ptr to a malloc,
+ *      initalizes it to init,
+ *      prints it out,
+ *      and free's every other ptr.
+ * Parameters: 
+ *      Takes in an int init which is the value we initialize ptr to.
+ * Assumptions: 
+ *      init is a number from 0-inf,
+ *      test_malloc_int takes in even ints,
+ *      test_malloc_char takes in odd ints.
+ */
 void test_malloc_int(int init) {
-    int *ptr = (int *) malloc(sizeof(int *));
+    int *ptr = (int *) malloc(sizeof(int));
     assert(ptr != NULL);
 
     *ptr = init;

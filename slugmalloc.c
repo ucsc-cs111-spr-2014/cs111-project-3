@@ -1,7 +1,3 @@
-/* CREATED 5/21/2014
- * Implement all the functions for slugmalloc.h
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,22 +10,18 @@
 
 #define TAG "CS-111"
 
+/* Set this to 1 to print extra debug information */
 #define DEBUG_PRINT 0
 
 /* buffy - used for printing */
 char buffy[128];
 
-/* int slug_atexit() - used to call slug_memstats() and slug_free_mem() at the
- * end of main.
-*/
-int slug_atexit(void);
-
-/* print_slug_mem_t
+/* print_slug_mem_t():
  * Purpose: To print out the information for elem
  * Parameters: elem - the element that we want to print the information for
- *             extra - the index of the allocation in the allocs array
- * Assumptions: Assume that elem and extra is not null.
-*/
+ *             extra - an extra optional prefix to the main output
+ * Assumptions: Assumes that elem and extra is not null.
+ */
 #if DEBUG_PRINT
 void print_slug_mem_t(slug_mem_t elem, char *extra) 
 {
@@ -41,8 +33,9 @@ void print_slug_mem_t(slug_mem_t elem, char *extra)
 }
 #endif
 
-/* print_slug_mem
- * Purpose: To print out the information for the whole SLUG_MEM array
+/* print_slug_mem():
+ * Purpose: To print out the information for the whole SLUG_MEM array,
+ *          ie: prints out all non-freed blocks
 */
 void print_slug_mem(void) 
 {
@@ -83,7 +76,6 @@ void print_slug_mem(void)
                 "line", "timestamp", 
                 "size");
 
-
     #if DEBUG_PRINT
         printf("%s", buffy);printf("mallocs:%d|nulls:%d\n", num_mallocs, num_nulls);
         *strrchr(buffy, '\t') = (char)0;
@@ -91,10 +83,11 @@ void print_slug_mem(void)
     #endif
 }
 
-/* add_slug_mem
- * Purpose: Adds an element to the SLUG_MEM.allocs array and keeps track of
-            information such as file name, time allocated, and the line number
- * Parameters: ptr - the current address of the malloc
+/* add_slug_mem():
+ * Purpose: Adds an element to the SLUG_MEM.allocs array
+ *          and keeps track of:
+ *          file name, line number, time allocated, and size
+ * Parameters: ptr      - the address of the malloc'ed memory
  *             FILE_POS - information about the malloc such as filename and line
  *                        number
  *             size - Size of the allocation
@@ -143,11 +136,17 @@ void add_slug_mem(void *ptr, char *FILE_POS, size_t size)
     #endif
 }
 
-/* slug_malloc
- * Purpose: To malloc something of size, size
- * Parameters: size - the size of memory to be malloc'd
- *             FILE_POS - Contains information about the malloc
-*/
+/* Prototype, see below for actual declaration */
+void slug_atexit(void);
+
+/* slug_malloc():
+ * Purpose: To malloc something of size size 
+ *          and to keep track of extra information
+ *          (see add_slug_mem)
+ * Parameters:  size     - the size of memory to be malloc'd
+ *              FILE_POS - Contains information about the malloc
+ *                  ie: file and line (see slugmalloc.h @ "#define FILE_POS")
+ */
 void *slug_malloc(size_t size, char *FILE_POS) 
 {
     void *ptr;
@@ -192,13 +191,14 @@ void *slug_malloc(size_t size, char *FILE_POS)
     return ptr;
 }
 
-/* slug_free
+/* slug_free():
  * Purpose: To free memory at ptr and modify the flag corresponding to ptr.
-            Also used to catch some possible bugs, such as freeing already freed
-            memory and freeing address that have not been malloc'd.
- * Parameters: ptr - points to address we want to free
+ *          Also used to catch some possible bugs, such as:
+ *              freeing memory already freed,
+ *              and freeing address that have not been malloc'd.
+ * Parameters: ptr      - points to address we want to free
  *             FILE_POS - contains information about the malloc
-*/
+ */
 void slug_free(void *ptr, char *FILE_POS) 
 {
     int i; 
@@ -228,6 +228,7 @@ void slug_free(void *ptr, char *FILE_POS)
             }
         }
     }
+    /*ERROR CHECKING*/
     if (i == SLUG_MEM.size) {
         if (found_freed_match) {
             fprintf(stderr, "%s::%s\n", FILE_POS,
@@ -240,7 +241,7 @@ void slug_free(void *ptr, char *FILE_POS)
             slug_atexit();
             abort();
         }
-    }
+    }/*END CHECKING*/
 
     #if DEBUG_PRINT
         *strrchr(buffy, '\t') = (char)0;
@@ -248,35 +249,32 @@ void slug_free(void *ptr, char *FILE_POS)
     #endif
 }
 
-void slug_free_mem(void);
-
-/* slug_free_mem
+/* slug_free_mem():
  * Purpose: Used to free our array
-*/
+ */
 void slug_free_mem(void)
 {
     free(SLUG_MEM.allocs);
     pntr = NULL;
 }
 
-/* slug_memstats
- * Purpose: To print out the required information as specified in the prompt
-*/
 void slug_memstats(void);
 
-/* int slug_atexit() 
- * Purpose: used to call slug_memstats() and slug_free_mem() at the end of main.
-*/
-int slug_atexit(void)
+/* slug_atexit():
+ * Used to call slug_memstats() and slug_free_mem() 
+ *      when the the "parent" program is done. 
+ */
+void slug_atexit(void)
 {
     slug_memstats();
     slug_free_mem();
-    return 0;
 }
 
-/* slug_memstats
- * Purpose: To print out the required information as specified in the prompt
-*/
+/* slug_memstats():
+ * Purpose: Prints out all still reachable (not freed) blocks of memory
+ *          and prints out a summary as specified.
+ *          (see: print statements or instructions.pdf)
+ */
 void slug_memstats(void)
 {
     int i;
